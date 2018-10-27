@@ -153,6 +153,7 @@ function Trainer:train(epoch, dataloader)
          --end
 
          isDebug = self.isDebug
+
          if isDebug then
             local image = require('image')
 
@@ -213,9 +214,9 @@ function Trainer:test(epoch, dataloader)
       local isDebug
       if epoch%5==0 then
          isDebug = true
-         image.save('imgdata/'..testidx.."data.jpg",self.input[1])
-         image.save('imgdata/'..testidx.."predictmask.jpg",output[#output][1])
-         image.save('imgdata/'..testidx.."targetmask.jpg",self.mask[#self.mask][1])
+         --image.save('imgdata/'..testidx.."data.jpg",self.input[1])
+         --image.save('imgdata/'..testidx.."predictmask.jpg",output[#output][1])
+         --image.save('imgdata/'..testidx.."targetmask.jpg",self.mask[#self.mask][1])
       else
          isDebug = self.isDebug
       end
@@ -283,13 +284,17 @@ function Trainer:test(epoch, dataloader)
          -- -- outmask[#outmask][1] 1x64x64
 
          local new_output = torch.cat(outmask[#outmask][1] ,output[#output][1],1)
+         local new_input = torch.cat(self.target[#self.target][1], self.target[#self.target/2][1], 1)
 
-         local gtIm = visualizer.drawOutput(self.input[1]:float(), self.target[#self.target][1]:float())
+         -- --local gtIm = visualizer.drawOutput(self.input[1]:float(), self.target[#self.target][1]:float())
+         local gtIm = visualizer.drawOutput(self.input[1]:float(), new_input:float())
          -- --local outIm = visualizer.drawOutput(self.input[1]:float(), output[#output][1]:float())
          local outIm = visualizer.drawOutput(self.input[1]:float(), new_output:float())
          win1=image.display{image=gtIm, win=win1, legend=('Test gt: %d | %d'):format(n, size)}
          win2=image.display{image=outIm, win=win2, legend=('Test output: %d | %d'):format(n, size)}
          -- sys.sleep(0.5)
+         image.save('imgdata/'..testidx.."epoch"..epoch.."out.jpg",outIm)
+         image.save('imgdata/'..testidx.."epoch"..epoch.."gt.jpg",gtIm)
       end
       -- Get predictions (hm and img refer to the coordinate space)
       local preds_hm, preds_img = finalPreds(output[#output], sample.center, sample.scale)

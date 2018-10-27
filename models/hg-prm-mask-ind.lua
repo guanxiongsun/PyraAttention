@@ -89,8 +89,8 @@ function createModel(opt)
         table.insert(out_mask,tmpOut2)
 
 
-        -- -- repeat mask
-        local rep_Fmask = nn.Replicate(opt.nFeats,1)(tmpOut2)
+        -- -- -- repeat mask
+        --local rep_Fmask = nn.Replicate(opt.nFeats,1)(tmpOut2)
 
         -- -- local heatmap = nn.CMulTable()({tmpOut, rep_Fmask})
 
@@ -99,12 +99,12 @@ function createModel(opt)
         -- Add predictions back
         if i < opt.nStack then
             local ll_ = nnlib.SpatialConvolution(opt.nFeats,opt.nFeats,1,1,1,1,0,0)(ll)
-            local tmpOut_ = nnlib.SpatialConvolution(opt.nClasses,opt.nFeats,1,1,1,1,0,0)(heatmap)
+            local tmpOut_ = nnlib.SpatialConvolution(opt.nClasses,opt.nFeats,1,1,1,1,0,0)(tmpOut)
             inter = nn.CAddTable()({inter, ll_, tmpOut_})
         end
 
-        -- -- inter * rep_Fmask
-        inter = nn.CMulTable()({inter, rep_Fmask})
+        -- -- -- inter * rep_Fmask
+        --inter = nn.CMulTable()({inter, rep_Fmask})
 
     end
 
