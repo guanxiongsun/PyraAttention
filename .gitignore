@@ -12,6 +12,7 @@ data/lsp/lsp_dataset
 data/lsp/lspet_dataset
 moniter.lua
 evaluation/eval_PCKh_private.m
+.idea/
 
 # Compiled Lua sources
 luac.out
