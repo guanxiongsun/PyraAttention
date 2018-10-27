@@ -1,0 +1,1 @@
+th  main.lua -batchSize 1   -resume checkpoints/mpii/hg-prm-stack2/
