@@ -64,7 +64,6 @@ function createModel(opt)
     local inter = r5
 
     for i = 1,opt.nStack do
-        print(i, "---#stack")
 
         local hg = hourglass(4,opt.nFeats, opt.nResidual, inter, inputRes,'preact',B,C)
 
@@ -74,23 +73,24 @@ function createModel(opt)
 
         -- Predicted heatmaps
         local tmpOut = nnlib.SpatialConvolution(opt.nFeats,opt.nClasses,1,1,1,1,0,0)(ll)
+        table.insert(out, tmpOut)
 
 
-        -- Linear layer to produce mask
-        local ll2 = preact(opt.nFeats, hg)
-        print("line 81")
-        ll2 = lin(opt.nFeats, opt.nFeats, ll2)
+--        -- Linear layer to produce mask
+--        local ll2 = preact(opt.nFeats, hg)
+--        ll2 = lin(opt.nFeats, opt.nFeats, ll2)
+--
+--        -- Predicted Masks
+--        local tmpOut2 = nnlib.SpatialConvolution(opt.nFeats,1,1,1,1,1,0,0)(ll2)
+--        tmpOut2= nnlib.Sigmoid()(tmpOut2)
+--
+--        table.insert(out_mask,tmpOut2)
+--
+--        local rep_Fmask = nn.Replicate(opt.nClasses,1)(tmpOut2)
+--        local heatmap = nn.CMulTable()({tmpOut, rep_Fmask})
+--
+--        table.insert(out,heatmap)
 
-        -- Predicted Masks
-        local tmpOut2 = nnlib.SpatialConvolution(opt.nFeats,1,1,1,1,1,0,0)(ll2)
-        tmpOut2= nnlib.Sigmoid()(tmpOut2)
-
-        table.insert(out_mask,tmpOut2)
-
-        local rep_Fmask = nn.Replicate(opt.nClasses,1)(tmpOut2)
-        local heatmap = nn.CMulTable()({tmpOut, rep_Fmask})
-
-        table.insert(out,heatmap)
 
         -- Add predictions back
         if i < opt.nStack then
@@ -100,11 +100,13 @@ function createModel(opt)
         end
     end
 
-    for k,v in pairs(out_mask) do table.insert(out,v) end
-    print(#out.."#out")
+
+--    for k,v in pairs(out_mask) do table.insert(out,v) end
+--    print(#out.."#out")
+
+
     -- Final model
     local model = nn.gModule({inp}, out)
-    print("line 99")
     return model:cuda()
 
 end

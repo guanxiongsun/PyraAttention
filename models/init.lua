@@ -108,7 +108,13 @@ function M.setup(opt, checkpoint)
    else--堆叠网络的数量 为啥这里没有看到opt.crit的参数呢？
       criterion = nn.ParallelCriterion()
       for i = 1,opt.nStack do criterion:add(nn[opt.crit .. 'Criterion']():cuda()) end
-      for i = 1,opt.nStack do criterion:add(nn[ 'BCECriterion']():cuda(),1/64) end
+
+
+      -- -- add mask BCECriterion to ParallelCriterion - criterion
+      local mask_weight = 1/64
+      for i = 1,opt.nStack do criterion:add(nn[ 'BCECriterion']():cuda(),mask_weight) end
+
+
       criterion:cuda()
    end
 

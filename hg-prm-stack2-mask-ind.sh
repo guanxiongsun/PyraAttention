@@ -3,8 +3,8 @@ expID=mpii/hg-prm-stack2-mask-ind #快照和日志文件将保存在checkpoints/
 dataset=mpii
 gpuID=0 #编程所用GPU
 nGPU=1 #所使用的GPU数量
-batchSize=12
-LR=7e-4
+batchSize=6
+LR=4e-4
 netType=hg-prm-mask-ind #所使用的网络架构
 nStack=2
 nResidual=1
@@ -40,4 +40,4 @@ CUDA_VISIBLE_DEVICES=$gpuID qlua main.lua \
 	-baseWidth $baseWidth \
 	-cardinality $cardinality \
     -debug $isdebug \
-	-loadModel $model
+	#-loadModel $model

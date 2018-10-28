@@ -55,7 +55,7 @@ function M.parse(arg)
    cmd:option('-epsilon',      1e-8,       'Epsilon')
    cmd:option('-dropout',      0,          'Dropout ratio')
    cmd:option('-init',         'none',     'Weight initialization method: none | heuristic | xavier | xavier_caffe | kaiming')
-   cmd:option('-schedule',     '100 130 150', 'schedule to decay learning rate')
+   cmd:option('-schedule',     '100 115 150', 'schedule to decay learning rate')
    cmd:option('-gamma',        0.1,        'LR is multiplied by gamma on schedule.')
    ---------- Model options ----------------------------------
    cmd:option('-netType',      'hg-prm',   'Options: hg-prm')

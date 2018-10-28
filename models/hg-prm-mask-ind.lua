@@ -60,11 +60,15 @@ function createModel(opt)
     local r5 = ResidualPyramid(128,opt.nFeats,1,'preact',false,inputRes,B,C)(r4)
 
     local out = {}
+
+
+    -- -- out_mask = {s1.mask, s2.mask, ... }
     local out_mask = {}
+
+
     local inter = r5
 
     for i = 1,opt.nStack do
-        print(i, "---#stack")
 
         local hg = hourglass(4,opt.nFeats, opt.nResidual, inter, inputRes,'preact',B,C)
 
@@ -79,7 +83,6 @@ function createModel(opt)
 
         -- -- Linear layer to produce mask
         local ll2 = preact(opt.nFeats, hg)
-        print("line 81")
         ll2 = lin(opt.nFeats, opt.nFeats, ll2)
 
 
@@ -90,7 +93,7 @@ function createModel(opt)
 
 
         -- -- -- repeat mask
-        --local rep_Fmask = nn.Replicate(opt.nFeats,1)(tmpOut2)
+        -- -- local rep_Fmask = nn.Replicate(opt.nFeats,1)(tmpOut2)
 
         -- -- local heatmap = nn.CMulTable()({tmpOut, rep_Fmask})
 
@@ -108,11 +111,13 @@ function createModel(opt)
 
     end
 
+
+    -- -- put out={s1.heatmap, s2.heatmap, ... } and out_mask={s1.mask, s2.mask, ... } togeter
     for k,v in pairs(out_mask) do table.insert(out,v) end
-    print(#out.."#out")
+
+
     -- Final model
     local model = nn.gModule({inp}, out)
-    print("line 99")
     return model:cuda()
 
 end

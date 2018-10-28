@@ -64,7 +64,6 @@ function createModel(opt)
     local inter = r5
 
     for i = 1,opt.nStack do
-        print(i, "---#stack")
 
         local hg = hourglass(4,opt.nFeats, opt.nResidual, inter, inputRes,'preact',B,C)
 
@@ -79,7 +78,6 @@ function createModel(opt)
 
         -- -- Linear layer to produce mask
         local ll2 = preact(opt.nFeats, hg)
-        print("line 81")
         ll2 = lin(opt.nFeats, opt.nFeats, ll2)
 
 
@@ -109,10 +107,8 @@ function createModel(opt)
     end
 
     for k,v in pairs(out_mask) do table.insert(out,v) end
-    print(#out.."#out")
     -- Final model
     local model = nn.gModule({inp}, out)
-    print("line 99")
     return model:cuda()
 
 end
