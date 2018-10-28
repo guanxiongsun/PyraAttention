@@ -1,12 +1,12 @@
 #!/usr/bin/env sh
-expID=mpii/hg-prm-stack4 #快照和日志文件将保存在checkpoints/$expID
+expID=mpii/hg-prm-stack2 #快照和日志文件将保存在checkpoints/$expID
 dataset=mpii
 gpuID=0 #编程所用GPU
 nGPU=1 #所使用的GPU数量
-batchSize=8
-LR=4e-4
+batchSize=12
+LR=7e-4
 netType=hg-prm #所使用的网络架构
-nStack=4
+nStack=2
 nResidual=1
 nThreads=8	# 使用多少个线程来加载数据
 minusMean=true
@@ -40,4 +40,4 @@ CUDA_VISIBLE_DEVICES=$gpuID qlua main.lua \
 	-baseWidth $baseWidth \
 	-cardinality $cardinality \
     -debug $isdebug \
-	-loadModel $model
+	#-loadModel $model
