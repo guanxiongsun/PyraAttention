@@ -5,6 +5,7 @@ imgdata
 gen
 misc
 checkpoints
+imgdata_mask_ind
 pretrained
 experiments/mpii/eval*
 data/mpii/images
