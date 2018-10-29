@@ -5,7 +5,7 @@ gpuID=0 #编程所用GPU
 nGPU=1 #所使用的GPU数量
 batchSize=12
 LR=7e-4
-netType=hg-prm #所使用的网络架构
+netType=two-hg #所使用的网络架构
 nStack=2
 nResidual=1
 nThreads=8	# 使用多少个线程来加载数据
@@ -16,7 +16,7 @@ snapshot=5
 nFeats=256
 baseWidth=9
 cardinality=4
-isdebug=false
+isdebug=true
 model=checkpoints/mpii/hg-prm-stack4/model_best.t7
 
 #这是一个训练的demo实例，采用了2层堆叠的模型

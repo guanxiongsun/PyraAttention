@@ -132,8 +132,8 @@ function Trainer:train(epoch, dataloader)
          -- check that the storage didn't get changed do to an unfortunate getParameters call
          assert(self.params:storage() == self.model:parameters()[1]:storage())
 
-         local isDebug = false
-         if isDebug then
+
+         if self.isDebug then
             local image = require('image')
 
             -- -- add test output table
