@@ -17,7 +17,6 @@ local nngraph = require 'nngraph'
 local utils = require 'utils.utils'
 local visualizer = require 'utils.visualizer'
 local matio = require 'matio'
-local image = require 'image'
 -- nngraph.setDebug(true)  -- uncomment for debugging nngraph
 
 local M = {}
@@ -82,44 +81,35 @@ function Trainer:train(epoch, dataloader)
    -- set the batch norm to training mode
    self.model:training()
    for n, sample in dataloader:run() do
-       --print("查看一下类型"..type(sample.output))
-
       nIter = nIter + 1
       xlua.progress(n, trainSize)
       local dataTime = dataTimer:time().real
       if sample ~= nil then
          local im = sample.input
-         -- 复制到GPU 包括input mask 和target（此时target只是包含了热图）
+         -- Copy input and target to the GPU
          self:copyInputs(sample)
-         --print('=> 当前取出来的数据输入数据大小 ' )
-         --print(self.input:size())--1 3 256 256
-         --print('=> 当前取出来的数据输出数据大小 ' )
-         --print(self.target[1]:size())--是一个大小为2的table，table中为1 16 64 64
+
+          --------------------------------------------------
+--[[          -- -- add mask to target]]
+         for k,v in pairs(self.mask) do table.insert(self.target,v) end
+          -------------------------------------------------
 
          local batchSize = self.input:size(1)
          local output = self.model:forward(self.input)
-         -- --print("输出层为："..type(output))
-         -- --print(#output)
-
-         -- --对应heatmap乘以
-         --for s = 1, #self.target do self.target[s] = 8*self.target[s] end
-
-         -- -- add mask to target
-         for k,v in pairs(self.mask) do table.insert(self.target,v) end
-
          local loss = self.criterion:forward(self.model.output, self.target)
 
+
          self.model:zeroGradParameters()
-         self.criterion:backward(self.model.output, self.target)
+         local c = self.criterion:backward(self.model.output, self.target)
+         --print(#c)
+         --print(self.criterion.gradInput[3]:sum())
          self.model:backward(self.input, self.criterion.gradInput)
 
-         optim[self.opt.optMethod](feval, self.params, self.optimState)--MSE作为损失
+         optim[self.opt.optMethod](feval, self.params, self.optimState)
 
          -- Calculate accuracy
-         local acc = self:computeScore(output, self.target)--计算准确率
-         -- -- print("target大小"..#self.target.."output大小"..#output)
-         -- -- heat对应的 MSE loss
-
+         local acc = self:computeScore(output, self.target)
+          ------------------------------------------------------------
          local msecri=nn.MSECriterion()
          local BCEcri=nn.BCECriterion()
          local mse=0
@@ -128,8 +118,9 @@ function Trainer:train(epoch, dataloader)
             local mse1 =msecri:forward(output[i],self.target[i])
             mse=mse1+mse
             local bce1 =BCEcri:forward(output[i+#output/2],self.target[i+#output/2])
-            bce=(bce1+bce)/64
+            bce=(bce1+bce)
          end
+          ---------------------------------------------------------------
          lossSum = lossSum + loss*batchSize
          accSum = accSum + acc*batchSize
          N = N + batchSize
@@ -141,31 +132,14 @@ function Trainer:train(epoch, dataloader)
          -- check that the storage didn't get changed do to an unfortunate getParameters call
          assert(self.params:storage() == self.model:parameters()[1]:storage())
 
-
-         -- -- add control debug
-         -- local isDebug = self.isDebug
-
-         --local isDebug
-         --if epoch%5==0 then
-         --   isDebug = true
-         --else
-         --   isDebug = self.isDebug
-         --end
-
-         isDebug = self.isDebug
-
+         local isDebug = false
          if isDebug then
             local image = require('image')
 
             -- -- add test output table
             local new_output = torch.cat(self.model.output[#self.model.output][1],self.model.output[#self.model.output/2][1],1)
-            -- -- print("new_ouput size is: ", new_output:size())
-            -- -- print("model.ouput size is: ", self.model.output[#self.model.output]:size())
-            -- -- print("model.ouput-1 size is: ", self.model.output[#self.model.output-1]:size())
-
-            local gtIm = visualizer.drawOutput(self.input[1]:float(), self.target[#self.target][1]:float())
-            -- --local outIm = visualizer.drawOutput(self.input[1]:float(), self.model.output[#self.model.output][1]:float())
-
+            local new_input = torch.cat(self.target[#self.target][1], self.target[#self.target/2][1], 1)
+            local gtIm = visualizer.drawOutput(self.input[1]:float(), new_input:float())
             local outIm = visualizer.drawOutput(self.input[1]:float(), new_output:float())
             win1=image.display{image=gtIm, win=win1, legend=('train gt: %d | %d'):format(n, trainSize)}
             win2=image.display{image=outIm, win=win2, legend=('train output: %d | %d'):format(n, trainSize)}
@@ -194,48 +168,36 @@ function Trainer:test(epoch, dataloader)
    local nCrops = self.opt.tenCrop and 10 or 1
    local lossSum, accSum = 0.0, 0.0
    local N = 0
+
    local testidx=0
    self.model:evaluate()
    for n, sample in dataloader:run(false) do
       xlua.progress(n, size)
+      testidx = testidx+1
       local dataTime = dataTimer:time().real
 
-      -- Copy input and target to the GPU,别的都没做啦
+      -- Copy input and target to the GPU
       self:copyInputs(sample)
       local batchSize = self.input:size(1)
+       ------------------------------------------
+       for k, v in pairs(self.mask) do table.insert(self.target, v) end
+       -------------------------------------------
 
-      -- 获取输出结果
+      -- Output of original image
       local output = self.model:forward(self.input)
-      testidx=1+testidx
+      local loss = self.criterion:forward(self.model.output, self.target)
 
-
-      -- -- add control to debug
 
       local isDebug
       if epoch%5==0 then
          isDebug = true
-         --image.save('imgdata/'..testidx.."data.jpg",self.input[1])
-         --image.save('imgdata/'..testidx.."predictmask.jpg",output[#output][1])
-         --image.save('imgdata/'..testidx.."targetmask.jpg",self.mask[#self.mask][1])
       else
          isDebug = self.isDebug
       end
 
-
-      -- -- add mask to target
-
-      for k, v in pairs(self.mask) do table.insert(self.target, v) end
-
-      local loss = self.criterion:forward(self.model.output, self.target)--得到损失
-
-      --复制一下output
       output = applyFn(function (x) return x:clone() end, output)
 
       local flippedOut = self.model:forward(flip(self.input))
-      --得到反转后的output
-
-      -- -- change L R on heatmap
-      -- -- divide flippedOut into heatOut and maskOut
 
       local heatOut, maskOut = {}, {}
 
@@ -246,12 +208,10 @@ function Trainer:test(epoch, dataloader)
             table.insert(maskOut, flippedOut[i])--mask翻转的结果
          end
       end
-      -- print(#heatOut,#maskOut)
+
       flippedOut = heatOut--翻转后热图
       local flippedOut2 = maskOut--翻转后mask
-      -- --
 
-      --
       local originheatOut, originmaskOut = {}, {}
 
       for i = 1, #output do
@@ -265,23 +225,17 @@ function Trainer:test(epoch, dataloader)
       local outmask=originmaskOut--原始mask
       --
       flippedOut = applyFn(function (x) return flip(shuffleLR(x, self.opt)) end, flippedOut)
-      --翻转后结果变回正常
+
       flippedOut2 = applyFn(function (x) return flip(x) end, flippedOut2)
-      --热图翻转后变回正常
-      --print(flippedOut[1]:size())--6 16 64 64,一个由两个tensor组成的
-      --print(#flippedOut)
+
       output = applyFn(function (x,y) return x:add(y):div(2) end, output, flippedOut)
-        --测试左右翻转后图像平均准确率
-      --
+
       outmask = applyFn(function (x,y) return x:add(y):div(2) end, outmask, flippedOut2)
 
 
       if isDebug then
 
          local image = require('image')
-         -- -- add outmask(stage x batch x 1 x 64x64) to output (stage x batch x 16 x 64x64)
-         -- -- output[#output][1] 16x64x64
-         -- -- outmask[#outmask][1] 1x64x64
 
          local new_output = torch.cat(outmask[#outmask][1] ,output[#output][1],1)
          local new_input = torch.cat(self.target[#self.target][1], self.target[#self.target/2][1], 1)
@@ -296,6 +250,7 @@ function Trainer:test(epoch, dataloader)
          image.save('imgdata/'..testidx.."epoch"..epoch.."out.jpg",outIm)
          image.save('imgdata/'..testidx.."epoch"..epoch.."gt.jpg",gtIm)
       end
+
       -- Get predictions (hm and img refer to the coordinate space)
       local preds_hm, preds_img = finalPreds(output[#output], sample.center, sample.scale)
       table.insert(predsTable, preds_img)
@@ -490,7 +445,7 @@ end
 
 function Trainer:computeScore(output, target)
    -------------------------------------------------------------------------------
-   -- Helpful functions for evaluation 返回的是准确率和预测值
+   -- Helpful functions for evaluation
    -------------------------------------------------------------------------------
    local function calcDists(preds, label, normalize)
        local dists = torch.Tensor(preds:size(2), preds:size(1))
@@ -498,7 +453,7 @@ function Trainer:computeScore(output, target)
        for i = 1,preds:size(1) do
            for j = 1,preds:size(2) do
                if label[i][j][1] > 1 and label[i][j][2] > 1 then
-                   dists[j][i] = torch.dist(label[i][j],preds[i][j])/normalize[i]--计算这两个点对应的距离
+                   dists[j][i] = torch.dist(label[i][j],preds[i][j])/normalize[i]
                else
                    dists[j][i] = -1
                end
@@ -508,22 +463,17 @@ function Trainer:computeScore(output, target)
    end
 
    local function getPreds(hm)
-       --print('hm:size(1)..'=>'.. hm:size(2)..'=>'.. hm:size(3)..'=>'.. hm:size(4))
-       --6 16 64 64
        assert(hm:dim() == 4, 'Input must be 4-D tensor')
-       local max, idx = torch.max(hm:view(hm:size(1), hm:size(2), hm:size(3) * hm:size(4)), 3)--3代表是在第三个维度求最值
-       --print(idx:size())果然是6 16 1
+       local max, idx = torch.max(hm:view(hm:size(1), hm:size(2), hm:size(3) * hm:size(4)), 3)
        local preds = torch.repeatTensor(idx, 1, 1, 2):float()
-       --print(preds:size()) 6 16 2
        preds[{{}, {}, 1}]:apply(function(x) return (x - 1) % hm:size(4) + 1 end)
        preds[{{}, {}, 2}]:add(-1):div(hm:size(3)):floor():add(1)
-       --转化为x,y坐标
        return preds
    end
 
    local function distAccuracy(dists, thr)
        -- Return percentage below threshold while ignoring values with a -1
-       if not thr then thr = .5 end--距离阈值小于0.5的数量
+       if not thr then thr = .5 end
        if torch.ne(dists,-1):sum() > 0 then
            return dists:le(thr):eq(dists:ne(-1)):sum() / dists:ne(-1):sum()
        else
@@ -534,16 +484,14 @@ function Trainer:computeScore(output, target)
    local function heatmapAccuracy(output, label, idxs, outputRes)
       -- Calculate accuracy according to PCK, but uses ground truth heatmap rather than x,y locations
       -- First value to be returned is average accuracy across 'idxs', followed by individual accuracies
-      local preds = getPreds(output)--最大点的x,y坐标值
-      local gt = getPreds(label)--标记点对应的x,y
+      local preds = getPreds(output)
+      local gt = getPreds(label)
       local dists = calcDists(preds, gt, torch.ones(preds:size(1))*outputRes/10)
-      -- print("当前normal参数"..outputRes/10) 6.4返回的是一个16×6的tensor
       local acc = {}
       local avgAcc = 0.0
       local badIdxCount = 0
-      --print("当前normal参数"..idxs:size())
+
       if not idxs then
-          --print("当前normal参数")
         for i = 1,dists:size(1) do
             acc[i+1] = distAccuracy(dists[i])
             if acc[i+1] >= 0 then avgAcc = avgAcc + acc[i+1]
@@ -551,27 +499,28 @@ function Trainer:computeScore(output, target)
         end
         acc[1] = avgAcc / (dists:size(1) - badIdxCount)
       else
-         -- print("jinrgdfa2")进入这里啦，{1,2,3,4,5,6,11,12,15,16}长度为10
-         -- print(idxs)
-         -- print("lets go")
-        for i = 1,#idxs do--注意i是从1-10，idxs[i]变化范围为{1,2,3,4,5,6,11,12,15,16}
-            acc[i+1] = distAccuracy(dists[idxs[i]])--这一个是对一个batch中所有相同部位的平均acc
+        for i = 1,#idxs do
+            acc[i+1] = distAccuracy(dists[idxs[i]])
             if acc[i+1] >= 0 then avgAcc = avgAcc + acc[i+1]
             else badIdxCount = badIdxCount + 1 end
         end
-        acc[1] = avgAcc / (#idxs - badIdxCount)--返回的准确率数值，注意这里是刨去了无法计算的数值
+        acc[1] = avgAcc / (#idxs - badIdxCount)
       end
       return unpack(acc), preds
    end
 
   local jntIdxs = {mpii={1,2,3,4,5,6,11,12,15,16},flic={3,4,5,6,7,8,9,10,11}}
 
-   --add heatmap index
-   local ht_idx= #output/2
+  ------------------------------------------------------
+    local ht_idx= #output/2
+  -------------------------------------------------------
 
    if torch.type(target) == 'table' then
-      --return heatmapAccuracy(output[#output], target[#output], ....
-      return heatmapAccuracy(output[ht_idx], target[ht_idx], jntIdxs[self.opt.dataset], self.opt.outputRes)--计算准确率时只是单单拎出来最后一层
+
+       ----------------------------------------------------------
+      return heatmapAccuracy(output[ht_idx], target[ht_idx], jntIdxs[self.opt.dataset], self.opt.outputRes)
+       ---------------------------------------------------------
+
    else
       return heatmapAccuracy(output, target, jntIdxs[self.opt.dataset], self.opt.outputRes)
    end
@@ -597,17 +546,25 @@ end
 function Trainer:copyInputs(sample)
    self.input = sample.input:cuda()
    self.target = sample.target
+
+    -----------------------------------------------------------------
    self.mask = sample.mask
+    ---------------------------------------------------------------
+
    if torch.type(self.target) == 'table' then
       for s = 1, #self.target do self.target[s] = self.target[s]:cuda() end
    else
       self.target = self.target:cuda()
    end
+
+    -----------------------------------------------------------------------
    if torch.type(self.mask) == 'table' then
       for s = 1, #self.mask do self.mask[s] = self.mask[s]:cuda() end
    else
       self.mask = self.mask:cuda()
    end
+    ----------------------------------------------------------------------
+
 end
 
 -- function Trainer:learningRate(epoch)

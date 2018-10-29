@@ -281,6 +281,7 @@ end
 -- 将圆之间的点连接起来
 -------------------------------------------------------------------------------
 function M.drawresult(imgs,nParts,pts)
+    --[[
     local  function judge_border(x,y,border)--x坐标,y坐标,ruguo
         if x>0 and y>0 and x<=border and y<=border then
             return 1--没超出边界
@@ -367,12 +368,14 @@ function M.drawresult(imgs,nParts,pts)
        end
        return math.floor((dist1+dist2)/4)
     end
+    --]]
     local mask=torch.zeros(64,64)
     for i = 1,nParts do
         mask=torch.cmax(mask,imgs[i])
     end--将多个分关节拼凑起来,从而融合到一张热图上面
     --image.save('show/'..imgname..'mymask'..imgname, mask)
     --绘制关节之间的连线,按顺序进行绘制
+--[[
     for i = 1,nParts-1 do
         if judge_border(pts[i][1],pts[i][2],mask:size(1)) then
             if judge_border(pts[i+1][1],pts[i+1][2],mask:size(1)) then
@@ -420,6 +423,7 @@ function M.drawresult(imgs,nParts,pts)
             mask=drawLine(mask,pts[3][1],pts[3][2],pts[14][1],pts[14][2],len)
        end
     end
+--]]
     return mask
 end
 

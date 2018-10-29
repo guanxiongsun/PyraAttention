@@ -85,17 +85,17 @@ function MpiiDataset:get(i, scaleFactor)
          drawGaussian(out[i], scale_pt[i], self.gsize)--绘制高斯点
          --image.save('show/'..imgname.."热图"..i.."--"..testidx.."--"..imgname, out[i])
         --print(out[i]:size())
-        if  i~=10  then--头顶不生成mask
+        --if  i~=10  then--头顶不生成mask
            drawMask(temp_mask[i], scale_pt[i], self.gsize)--绘制关节点
-        end
+        -- end
         --image.save('show/'..imgname.."掩码"..i.."--"..testidx.."--"..imgname, temp_mask[i])
      end--对输出图像绘制高斯图
    end
 
    --image.save('show/'..imgname.."--"..testidx.."--"..imgname, inp)
    --print("热图前坐标点为:x1:"..scale_pt[1][1]..'-Y1:'..scale_pt[1][2]..'-X2:'..scale_pt[2][1]..'-Y2:'..scale_pt[2][2])
-   local mask=drawresult(temp_mask,nParts,scale_pt)--将关节点连接起来，从而生成预测热图
-   drawHead(mask,scale_pt[9],scale_pt[10])
+   local mask=drawresult(temp_mask,nParts,scale_pt)--生成预测热图,并且将关节点连接起来，这里没有将关节点连接起来
+   --drawHead(mask,scale_pt[9],scale_pt[10])
    out[nParts+1]=mask--这样才能保证数据增强时变换一致
    --image.save('show/'..imgname.."mymask".."--"..testidx.."--"..imgname,mask)
    --print("一张训练label产生完毕")
