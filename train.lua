@@ -248,7 +248,7 @@ function Trainer:test(epoch, dataloader)
          win2=image.display{image=outIm, win=win2, legend=('Test output: %d | %d'):format(n, size)}
          -- sys.sleep(0.5)
          image.save('imgdata/'..testidx.."epoch"..epoch.."out.jpg",outIm)
-         image.save('imgdata/'..testidx.."epoch"..epoch.."gt.jpg",gtIm)
+         image.save('imgdata/'..testidx.."gt.jpg",gtIm)
       end
 
       -- Get predictions (hm and img refer to the coordinate space)
