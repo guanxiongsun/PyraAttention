@@ -45,7 +45,7 @@ function M.parse(arg)
    ------------- Checkpointing options ---------------
    cmd:option('-save',         'checkpoints','Directory in which to save checkpoints')
    cmd:option('-expID',        'default',  'Experiment ID')
-   cmd:option('-resume',       '', 'Resume from the latest checkpoint in this directory')
+   cmd:option('-resume',       'checkpoints/mpii/two-hg-stack2', 'Resume from the latest checkpoint in this directory')
    cmd:option('-loadModel',    'none',     'Load model')  
    ---------- Optimization options ----------------------checkpoints/mpii/hg-prm-stack2/
    cmd:option('-LR',           2.5e-4,     'initial learning rate')

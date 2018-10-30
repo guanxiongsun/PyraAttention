@@ -516,10 +516,9 @@ function Trainer:computeScore(output, target)
   -------------------------------------------------------
 
    if torch.type(target) == 'table' then
-
-       ----------------------------------------------------------
+    ----------------------------------------------------------
       return heatmapAccuracy(output[ht_idx], target[ht_idx], jntIdxs[self.opt.dataset], self.opt.outputRes)
-       ---------------------------------------------------------
+    ----------------------------------------------------------
 
    else
       return heatmapAccuracy(output, target, jntIdxs[self.opt.dataset], self.opt.outputRes)

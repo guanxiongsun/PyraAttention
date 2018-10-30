@@ -3,8 +3,8 @@ expID=mpii/two-hg-stack2 #快照和日志文件将保存在checkpoints/$expID
 dataset=mpii
 gpuID=0 #编程所用GPU
 nGPU=1 #所使用的GPU数量
-batchSize=12
-LR=7e-4
+batchSize=8
+LR=5e-4
 netType=two-hg #所使用的网络架构
 nStack=2
 nResidual=1
@@ -16,10 +16,10 @@ snapshot=5
 nFeats=256
 baseWidth=9
 cardinality=4
-isdebug=true
+isdebug=false
 model=checkpoints/mpii/hg-prm-stack4/model_best.t7
+resume=checkpoints/mpii/two-hg-stack2
 
-#这是一个训练的demo实例，采用了2层堆叠的模型
 CUDA_VISIBLE_DEVICES=$gpuID qlua main.lua \
 	-dataset $dataset \
 	-expID $expID \
@@ -41,3 +41,4 @@ CUDA_VISIBLE_DEVICES=$gpuID qlua main.lua \
 	-cardinality $cardinality \
     -debug $isdebug \
 	#-loadModel $model
+    -resume $resume
