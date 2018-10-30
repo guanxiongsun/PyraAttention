@@ -1,9 +1,5 @@
-% wei
-addpath('./utils');
+addpath('../utils');
 
-% set `debug = true` if you want to visualize the skeletons
-% You also need to download the MPII dataset and specify the path of 
-% annopath = `mpii_human_pose_v1_u12_1.mat`
 debug = false; 
 annopath = 'path_to/mpii_human_pose_v1_u12_1.mat';
 
@@ -18,7 +14,11 @@ pa = [2, 3, 7, 7, 4, 5, 8, 9, 10, 0, 12, 13, 8, 8, 14, 15];
 load('data/detections_our_format.mat', 'dataset_joints', 'jnt_missing', 'pos_pred_src', 'pos_gt_src', 'headboxes_src');
 
 % predictions
-predfile = '../pretrained/pred_multiscale_250.h5';
+
+%predfile = '../checkpoints/mpii/hg-prm-stack2/pred_post_54.h5';
+
+predfile = '../checkpoints/mpii/two-hg-stack2/pred_post_81.h5';
+
 preds = hdf5read(predfile,'preds');
 pos_pred_src = permute(preds(1:2, :, :), [2, 1, 3]);   
 
@@ -53,6 +53,16 @@ rank = find(ismember(dataset_joints, 'rank'));
 
 % Calculate PCKh again for a few joints just to make sure our evaluation
 % matches Leonid's...
+
+%Added to match the pred size -------------------------------------------%
+
+nsamples = size(pos_pred_src, 3);
+pos_gt_src = pos_gt_src(:,:,1:nsamples);
+headboxes_src = headboxes_src(:,:,1:nsamples);
+jnt_missing = jnt_missing(:,1:nsamples);
+
+%------------------------------------------------------------------------%
+
 jnt_visible = 1 - jnt_missing;
 uv_err = pos_pred_src - pos_gt_src;
 uv_err = sqrt(sum(uv_err .* uv_err, 2));
