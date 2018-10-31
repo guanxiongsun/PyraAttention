@@ -125,8 +125,8 @@ function Trainer:train(epoch, dataloader)
          accSum = accSum + acc*batchSize
          N = N + batchSize
 
-         print((' | Epoch: [%d][%d/%d]    Time %.3f  Data %.6f    Loss %.6f    Acc %.6f  mseloss %.6f bceloss %.6f' ):format(
-            epoch, n, trainSize, timer:time().real, dataTime, loss, acc,mse,bce))
+         print((' | Epoch: [%d][%d/%d]    Loss %.6f    Acc %.6f  mseloss %.6f bceloss %.6f LR %.6f' ):format(
+            epoch, n, trainSize, loss, acc, mse, bce, self.optimState.learningRate))
 
          self.trainLogger:add{epoch, n, acc, loss, self.optimState.learningRate, self.gradParams:min(), self.gradParams:max(), self.gradParams:mean(), self.gradParams:std()}
          -- check that the storage didn't get changed do to an unfortunate getParameters call

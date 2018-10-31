@@ -45,7 +45,7 @@ function M.parse(arg)
    ------------- Checkpointing options ---------------
    cmd:option('-save',         'checkpoints','Directory in which to save checkpoints')
    cmd:option('-expID',        'default',  'Experiment ID')
-   cmd:option('-resume',       'checkpoints/mpii/two-hg-stack2', 'Resume from the latest checkpoint in this directory')
+   cmd:option('-resume',       '', 'Resume from the latest checkpoint in this directory')
    cmd:option('-loadModel',    'none',     'Load model')  
    ---------- Optimization options ----------------------checkpoints/mpii/hg-prm-stack2/
    cmd:option('-LR',           2.5e-4,     'initial learning rate')
@@ -55,7 +55,7 @@ function M.parse(arg)
    cmd:option('-epsilon',      1e-8,       'Epsilon')
    cmd:option('-dropout',      0,          'Dropout ratio')
    cmd:option('-init',         'none',     'Weight initialization method: none | heuristic | xavier | xavier_caffe | kaiming')
-   cmd:option('-schedule',     '100 115 150', 'schedule to decay learning rate')
+   cmd:option('-schedule',     '150 170', 'schedule to decay learning rate')
    cmd:option('-gamma',        0.1,        'LR is multiplied by gamma on schedule.')
    ---------- Model options ----------------------------------
    cmd:option('-netType',      'hg-prm',   'Options: hg-prm')
