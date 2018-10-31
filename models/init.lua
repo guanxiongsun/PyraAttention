@@ -109,7 +109,7 @@ function M.setup(opt, checkpoint)
       for i = 1,opt.nStack do criterion:add(nn[opt.crit .. 'Criterion']():cuda(),1) end
 
       -- -- criterion_mask
-      for i = 1,opt.nStack do criterion:add(nn[ 'BCECriterion']():cuda(),0.01) end
+      for i = 1,opt.nStack do criterion:add(nn[ 'BCECriterion']():cuda(),0.005) end
 
       criterion:cuda()
    end
