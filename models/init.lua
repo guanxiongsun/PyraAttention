@@ -106,10 +106,10 @@ function M.setup(opt, checkpoint)
       criterion = nn[opt.crit .. 'Criterion']():cuda()
    else
       criterion = nn.ParallelCriterion()
-      for i = 1,opt.nStack do criterion:add(nn[opt.crit .. 'Criterion']():cuda(),1) end
+      for i = 1,opt.nStack do criterion:add(nn[opt.crit .. 'Criterion']():cuda(), opt.w_1) end
 
       -- -- criterion_mask
-      for i = 1,opt.nStack do criterion:add(nn[ 'BCECriterion']():cuda(),0.005) end
+      for i = 1,opt.nStack do criterion:add(nn[ 'BCECriterion']():cuda(), opt.w_2) end
 
       criterion:cuda()
    end
