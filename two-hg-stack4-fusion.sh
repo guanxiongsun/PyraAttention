@@ -17,8 +17,9 @@ nFeats=256
 baseWidth=9
 cardinality=4
 isdebug=false
+w_2=0.0025
 model=checkpoints/mpii/two-hg-stack2/model_best.t7
-resume=checkpoints/mpii/two-hg-stack2
+resume=checkpoints/mpii/two-hg-stack4
 
 CUDA_VISIBLE_DEVICES=$gpuID qlua main.lua \
 	-dataset $dataset \
@@ -40,5 +41,6 @@ CUDA_VISIBLE_DEVICES=$gpuID qlua main.lua \
 	-baseWidth $baseWidth \
 	-cardinality $cardinality \
     -debug $isdebug \
-	#-loadModel $model
+	-w_2 $w_2
+    #-loadModel $model
     #-resume $resume
