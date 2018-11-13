@@ -1,7 +1,7 @@
 # Temp files
 sunguanxiong
 ignore
-imgdata
+imgdat*/
 gen
 misc
 checkpoints
@@ -13,7 +13,7 @@ data/lsp/lsp_dataset
 data/lsp/lspet_dataset
 moniter.lua
 evaluation/eval_PCKh_private.m
-.idea/
+.idea
 
 # Compiled Lua sources
 luac.out
