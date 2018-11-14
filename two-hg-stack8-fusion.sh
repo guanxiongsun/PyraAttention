@@ -4,7 +4,7 @@ dataset=mpii
 gpuID=0 #编程所用GPU
 nGPU=1 #所使用的GPU数量
 batchSize=2
-LR=2.5e-4
+LR=3e-4
 netType=two-hg-fusion #所使用的网络架构
 nStack=8
 nResidual=1
@@ -16,7 +16,7 @@ snapshot=5
 nFeats=256
 baseWidth=9
 cardinality=4
-isdebug=false
+isdebug=True
 w_2=0.0025
 
 CUDA_VISIBLE_DEVICES=$gpuID qlua main.lua \
