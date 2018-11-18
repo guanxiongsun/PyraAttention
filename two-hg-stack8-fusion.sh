@@ -1,12 +1,12 @@
 #!/usr/bin/env sh
-expID=mpii/two-hg-stack8-fusion #快照和日志文件将保存在checkpoints/$expID
+expID=mpii/two-hg-stack6-fusion #快照和日志文件将保存在checkpoints/$expID
 dataset=mpii
 gpuID=0 #编程所用GPU
 nGPU=1 #所使用的GPU数量
-batchSize=2
-LR=3e-4
+batchSize=3
+LR=4e-4
 netType=two-hg-fusion #所使用的网络架构
-nStack=8
+nStack=6
 nResidual=1
 nThreads=8	# 使用多少个线程来加载数据
 minusMean=true
@@ -16,7 +16,7 @@ snapshot=5
 nFeats=256
 baseWidth=9
 cardinality=4
-isdebug=True
+isdebug=true
 w_2=0.0025
 
 CUDA_VISIBLE_DEVICES=$gpuID qlua main.lua \
@@ -38,5 +38,5 @@ CUDA_VISIBLE_DEVICES=$gpuID qlua main.lua \
 	-nFeats $nFeats \
 	-baseWidth $baseWidth \
 	-cardinality $cardinality \
-    -debug $isdebug \
+    	-debug $isdebug \
 	-w_2 $w_2

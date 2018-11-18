@@ -100,9 +100,10 @@ function Trainer:train(epoch, dataloader)
 
 
          self.model:zeroGradParameters()
-         local c = self.criterion:backward(self.model.output, self.target)
-         --print(#c)
-         --print(self.criterion.gradInput[3]:sum())
+         self.criterion:backward(self.model.output, self.target)
+--         local c = self.criterion:backward(self.model.output, self.target)
+--         print(#c)
+--         print(self.criterion.gradInput[3]:sum())
          self.model:backward(self.input, self.criterion.gradInput)
 
          optim[self.opt.optMethod](feval, self.params, self.optimState)
@@ -132,7 +133,7 @@ function Trainer:train(epoch, dataloader)
          -- check that the storage didn't get changed do to an unfortunate getParameters call
          assert(self.params:storage() == self.model:parameters()[1]:storage())
 
-
+         -- print (self.isDebug)
          if self.isDebug then
             local image = require('image')
 

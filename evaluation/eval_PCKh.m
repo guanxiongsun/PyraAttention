@@ -17,7 +17,7 @@ load('data/detections_our_format.mat', 'dataset_joints', 'jnt_missing', 'pos_pre
 
 %predfile = '../checkpoints/mpii/hg-prm-stack2/pred_post_54.h5';
 
-predfile = '../checkpoints/mpii/two-hg-stack8-fusion/pred_post_5.h5';
+predfile = '../checkpoints/mpii/two-hg-stack4-fusion/pred_post_120.h5';
 
 preds = hdf5read(predfile,'preds');
 pos_pred_src = permute(preds(1:2, :, :), [2, 1, 3]);
